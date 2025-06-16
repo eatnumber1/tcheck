@@ -37,7 +37,7 @@ class TorrentChecker(object):
     hasher = hashlib.sha1()
     for path in paths:
       full_path = datadir.joinpath(path)
-      #logging.debug("Hashing piece %d in file %s", piece_index, path)
+      logging.debug("Hashing piece %d in file %s", piece_index, path)
       if bytes_remaining == 0:
         raise ValueError(
             "Too many paths passed into Check for piece size {}: {!r}".format(
@@ -58,10 +58,10 @@ class TorrentChecker(object):
   def _Check(self, datadir, piece_index, piece_sha1, piece_len, paths, offset):
     sha1 = self._GetPieceHash(datadir, piece_index, piece_len, paths, offset)
     if piece_sha1 == sha1:
-      #logging.info(
-      #    ("Piece %d (len %d) verifies correctly with hash %r, containing files\n"
-      #     "%s"),
-      #       piece_index, piece_len, sha1, paths)
+      logging.info(
+          ("Piece %d (len %d) verifies correctly with hash %r, containing files\n"
+           "%s"),
+             piece_index, piece_len, sha1, paths)
       pass
     else:
       self._logger.warning(
@@ -73,7 +73,7 @@ class TorrentChecker(object):
     file_infos_iter = iter(file_infos)
     cur_file_info = next(file_infos_iter)
     prev_offset = 0
-    #logging.debug("piece_len = %d", piece_len)
+    logging.debug("piece_len = %d", piece_len)
     for piece_index, piece_sha1 in enumerate(pieces):
       offset = prev_offset
       bytes_covered_total = 0
@@ -88,20 +88,20 @@ class TorrentChecker(object):
         newly_covered_bytes = min(piece_len - bytes_covered_total, effective_size)
         bytes_covered_total += newly_covered_bytes
         offset += newly_covered_bytes
-        #logging.debug("offset = %d, bct = %d, size = %d", offset,
-        #    bytes_covered_total, size)
+        logging.debug("offset = %d, bct = %d, size = %d", offset,
+            bytes_covered_total, size)
         if offset == size:
-          #logging.debug("resetting offset")
+          logging.debug("resetting offset")
           offset = 0
           try:
             cur_file_info = next(file_infos_iter)
           except StopIteration:
             break
 
-      #logging.debug("bct = %d", bytes_covered_total)
-      #logging.debug(
-      #    "yielding (%d, %r, %r, %d)", piece_index, piece_sha1, piece_paths,
-      #    prev_offset)
+      logging.debug("bct = %d", bytes_covered_total)
+      logging.debug(
+          "yielding (%d, %r, %r, %d)", piece_index, piece_sha1, piece_paths,
+          prev_offset)
       yield (piece_index, piece_sha1, piece_paths, prev_offset)
       prev_offset = offset
 
@@ -122,9 +122,9 @@ class TorrentChecker(object):
         for piece_index, piece_sha1, piece_paths, offset in self._CollectPieces(
             piece_len, pieces, file_infos):
           if not self._IsWantedDataFile(piece_paths):
-            #logging.debug(
-            #    "Skipping files which matched no data_file_globs: %r",
-            #    piece_paths)
+            logging.debug(
+                "Skipping files which matched no data_file_globs: %r",
+                piece_paths)
             continue
           futures.append(
               executor.submit(
@@ -146,7 +146,7 @@ def main():
   parser.add_argument('torrent_file', type=str)
   parser.add_argument('data_file_globs', nargs='+', type=str, default=["**"])
   parser.add_argument('--checkers', default=None, type=int)
-  parser.add_argument('--loglevel', default=None, type=str)
+  parser.add_argument('--loglevel', default='WARN', type=str)
   parser.add_argument('--datadir', default=pathlib.Path('.'), type=pathlib.Path)
   args = parser.parse_args()
 

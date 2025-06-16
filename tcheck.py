@@ -142,12 +142,22 @@ class TorrentChecker(object):
         raise
 
 def main():
-  parser = argparse.ArgumentParser(description='Verify downloaded torrents')
+  parser = argparse.ArgumentParser(description='Verify downloaded torrents.')
   parser.add_argument('torrent_file', type=str)
-  parser.add_argument('data_file_globs', nargs='+', type=str, default=["**"])
+  parser.add_argument(
+    'data_file_globs', nargs='+', type=str, default=["**"],
+    help=(
+        'Globs of files inside the torrent to check. Must be paths relative to '
+        'the root of the torrent'))
   parser.add_argument('--checkers', default=None, type=int)
-  parser.add_argument('--loglevel', default='WARN', type=str)
-  parser.add_argument('--datadir', default=pathlib.Path('.'), type=pathlib.Path)
+  parser.add_argument(
+    '--loglevel', default='WARN', type=str,
+    help='Logging level. One of DEBUG, INFO, WARN or ERROR.')
+  parser.add_argument(
+    '--datadir', default=pathlib.Path('.'), type=pathlib.Path,
+    help=(
+        'Directory in which to search for files to check. data_file_globs is '
+        'relative to this directory'))
   args = parser.parse_args()
 
   logging.basicConfig(level=getattr(logging, args.loglevel.upper()))
